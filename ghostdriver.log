@@ -1,0 +1,30 @@
+[INFO  - 2017-03-27T14:22:57.724Z] GhostDriver - Main - running on port 55484
+[INFO  - 2017-03-27T14:22:58.794Z] Session [e0a04a40-12f8-11e7-9699-5f535f29f1bc] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
+[INFO  - 2017-03-27T14:22:58.794Z] Session [e0a04a40-12f8-11e7-9699-5f535f29f1bc] - page.customHeaders:  - {}
+[INFO  - 2017-03-27T14:22:58.794Z] Session [e0a04a40-12f8-11e7-9699-5f535f29f1bc] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"windows-7-32bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
+[INFO  - 2017-03-27T14:22:58.794Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: e0a04a40-12f8-11e7-9699-5f535f29f1bc
+[INFO  - 2017-03-27T14:27:57.724Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[ERROR - 2017-03-27T14:31:17.427Z] Session [e0a04a40-12f8-11e7-9699-5f535f29f1bc] - page.onError - msg: Error: null is not an object (evaluating 't.data.data.total')
+http://static.tianyancha.com/wap/resources/scripts/app-df6ee61e0b.js:22:30299
+http://static.tianyancha.com/wap/resources/scripts/app-df6ee61e0b.js:8:2283
+$eval@http://static.tianyancha.com/wap/resources/scripts/app-df6ee61e0b.js:8:16918
+$digest@ht[INFO  - 2017-03-27T14:33:20.256Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+[INFO  - 2017-03-27T14:36:49.443Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+sources/scripts/app-df6ee61e0b.js:7:57769
+onload@http://static.tianyancha.com/wap/resources/scripts/app-df6ee61e0b.js:7:58320
+
+  phantom[INFO  - 2017-03-27T14:33:01.222Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
+ stack:
+  (anonymous function) (http://static.tianyancha.com/wap/resources/scripts/app-df6ee61e0b.js:7)
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2017-03-27T14:31:42.026Z] WebElementLocator - _handleLocateCommand - Element(s) NOT Found: GAVE UP. Search Stop Time: 1490625101987
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2017-03-27T14:32:13.313Z] WebElementLocator - _handleLocateCommand - Element(s) NOT Found: GAVE UP. Search Stop Time: 1490625133281
+
+  phantomjs://platform/console++.js:263 in error
+[ERROR - 2017-03-27T14:32:42.080Z] WebElementLocator - _handleLocateCommand - Element(s) NOT Found: GAVE UP. Search Stop Time: 1490625162032
+
+  phantomjs://platform/console++.js:263 in error
+[INFO  - 2017-03-27T14:32:57.723Z] SessionManagerReqHand - _cleanupWindowlessSessions - Asynchronous Sessions clean-up phase starting NOW
