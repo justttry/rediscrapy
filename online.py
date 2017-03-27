@@ -52,7 +52,7 @@ class online:
         online_users = r.sunion(keys_in_last_10_minutes())
         result = ''
         for user in online_users:
-          result += 'User agent:' + user + '\r\n'
+            result += 'User agent:' + user + '\r\n'
         return result
 
 
