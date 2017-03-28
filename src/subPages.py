@@ -61,6 +61,7 @@ class ProcessSubPages(ProcessPageTemplate):
         data = self.driver.find_elements_by_xpath(xpath)
         for i in data:
             ret[i.text[2:]] = i.get_attribute('href')
+        self.closeDriver()
         return ret
     
     

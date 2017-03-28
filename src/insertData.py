@@ -6,6 +6,7 @@ function:向数据库插入数据
 """
 
 import redis
+from selenium import webdriver
 from mainPage import ProcessMainPage
 from subPages import ProcessSubPages
 from compPage import ProcessCompanyPage
@@ -13,6 +14,8 @@ from simHash import simhash
 from eventEngine import EventEngine, Event
 import jieba
 import unittest
+
+progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 
 ########################################################################
 class RedisScrapy(object):
@@ -23,16 +26,81 @@ class RedisScrapy(object):
         """Constructor"""
         self.url = 'http://www.tianyancha.com'
         self.eventEngine = EventEngine()
+        self.insertData = InsertData()
+        self.hashs = [long(i) for i in self.getHashs()]
         
     #----------------------------------------------------------------------
     def getSubpages(self):
         """
         从主页上获取子网页列表
         """
-        
-        
-        
+        p = ProcessMainPage(self.url)
+        if p.getUrl():
+            subpages = p.getSubPages()
+        #将地区信息存入redis
+        self.insertData.insertRegions(subpages.keys())
+        ret = {}
+        for i, j in subpages.items():
+            for k in range(50):
+                if k:
+                    ret[j + '/%d'%k] = i
+                else:
+                    ret[j] = i
+        return ret
     
+    #----------------------------------------------------------------------
+    def getCompanies(self, region, url):
+        """
+        从子网页上获取公司列表
+        """
+        p = ProcessSubPages(url)
+        if p.getUrl():
+            datas = p.getSubPages()
+        else:
+            datas = {}
+        #将地区-公司信息存入redis
+        self.insertData.insertRegionCompanies(region, datas.keys())
+        return datas
+    
+    #----------------------------------------------------------------------
+    def processCompInfo(self, company, url):
+        """
+        获取公司信息
+        """
+        #计算hash值
+        if self.insertData.insertCompanies(company):
+            p = ProcessCompanyPage(url)
+            hold_pages, invest_pages = p.getSubPages()
+            cominfo = p.getComInfo()
+            hash_ = simhash(cominfo.values())
+            if self.compareHashes(hash_):
+                #将新的哈希值存入列表
+                self.hashs.append(hash_.hash)
+                #将新的哈希值入栈
+                self.insertData.insertHashs(hash_.hash)
+                #将公司信息入栈
+                self.insertData.insertCompanyHash(company, hash_.hash)
+                self.insertData.insertHashCompanyInfo(hash_.hash, cominfo)
+            
+    #----------------------------------------------------------------------
+    def compareHashes(self, hash_, delta=1):
+        """"""
+        for i in self.hashs:
+            if hash_.hamming_distance(i) < delta:
+                return False
+        return True
+            
+    #----------------------------------------------------------------------
+    def getHashs(self):
+        """
+        获取数据库中的哈希值列表
+        """
+        return self.insertData.getHashs()
+    
+    #----------------------------------------------------------------------
+    def clearDb(self):
+        """"""
+        self.insertData.clearDb()
     
 
 ########################################################################
@@ -40,11 +108,12 @@ class InsertData(object):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self, dbname, r='regions', c='company'):
+    def __init__(self, r='regions', c='company', h='hashes'):
         """Constructor"""
         self.r = redis.StrictRedis()
         self.region = r
         self.company = c
+        self.hashes = h
         
     #----------------------------------------------------------------------
     def insertRegions(self, regions):
@@ -54,22 +123,40 @@ class InsertData(object):
     #----------------------------------------------------------------------
     def insertCompanies(self, comps):
         """插入company-公司"""
-        return self.r.sadd(self.company, *comps)
+        if type(comps) == 'list':
+            return self.r.sadd(self.company, *comps)
+        else:
+            return self.r.sadd(self.company, comps)
+    
+    #----------------------------------------------------------------------
+    def insertHashs(self, hash_):
+        """"""
+        return self.r.sadd('hash:' + str(self.hashes), hash_)
     
     #----------------------------------------------------------------------
     def insertRegionCompanies(self, region, companies):
         """插入地区-公司集合"""
-        return self.r.sadd(region, *companies)
+        return self.r.sadd('region:' + region, *companies)
     
     #----------------------------------------------------------------------
     def insertCompanyHash(self, company, hash_):
         """插入公司-哈希集合"""
-        return self.r.sadd(company, hash_)
+        return self.r.sadd('company:' + company, hash_)
     
     #----------------------------------------------------------------------
     def insertHashCompanyInfo(self, hash_, cominfo):
         """插入哈希-公司信息"""
-        return self.r.hmset(hash_, cominfo)
+        return self.r.hmset('companyInfo:' + str(hash_), cominfo)
+    
+    #----------------------------------------------------------------------
+    def getHashs(self):
+        """"""
+        return self.r.smembers(self.hashes)
+    
+    #----------------------------------------------------------------------
+    def clearDb(self):
+        """"""
+        self.r.flushdb()
     
     
 ########################################################################
@@ -160,15 +247,88 @@ class InsertDataTest(unittest.TestCase):
         print 'test_inserthashcompinfo done'
         print '-' * 70
         
+    #----------------------------------------------------------------------
+    def test_insertgethashes(self):
+        """"""
+        self.r.insertHashs(0)
+        self.r.insertHashs(1)
+        self.r.insertHashs(2)
+        self.r.insertHashs(3)
+        self.r.insertHashs(4)
+        ret = self.r.getHashs()
+        self.assertListEqual(sorted(list(ret)), sorted(map(str, range(5))))
+        
+########################################################################
+class RedisScrapyTest(unittest.TestCase):
+    """"""
+    
+    #----------------------------------------------------------------------
+    def setUp(self):
+        """"""
+        self.r = RedisScrapy()
+        self.r.clearDb()
+
+    #----------------------------------------------------------------------
+    def test_getsubpages(self):
+        subpages = self.r.getSubpages()
+        for i, j in subpages.items():
+            print i, j
+        print len(subpages)
+        print 'test_getsubpages done'
+        print '-' * 70
+        
+    #----------------------------------------------------------------------
+    def test_getCompanies(self):
+        """"""
+        url = 'http://guyuan.tianyancha.com/search/p8'
+        region = u'北京'
+        datas = self.r.getCompanies(region, url)
+        for i, j in datas.items():
+            print u'公司：%s, \t网址:%s' %(i, j)
+        print 'test_getCompanies done'
+        print '-' * 70
+    
+    #----------------------------------------------------------------------
+    def test_insertgethashes(self):
+        """"""
+        self.r.insertData.insertHashs(0)
+        self.r.insertData.insertHashs(3)
+        self.r.insertData.insertHashs(5)
+        self.r.insertData.insertHashs(7)
+        self.r.insertData.insertHashs(9)
+        ret = self.r.getHashs()
+        self.assertListEqual(sorted(list(ret)), 
+                             sorted(map(str, [0, 3, 5, 7, 9])))
+        print 'test_insertgethashes done'
+        print '-' * 70
+        
+    #----------------------------------------------------------------------
+    def test_getcompanyinfo(self):
+        """"""
+        url = 'http://guyuan.tianyancha.com/search/p8'
+        region = u'北京'
+        com_webs = self.r.getCompanies(region, url)
+        for i, j in com_webs.items():
+            self.r.processCompInfo(i, j)
+        print 'test_getcompanyinfo done'
+        print '-' * 70
+        
+        
 #----------------------------------------------------------------------
 def suite():
     """"""
     suite = unittest.TestSuite()
-    suite.addTest(InsertDataTest('test_insertregion'))
-    suite.addTest(InsertDataTest('test_insertcompanies'))
-    suite.addTest(InsertDataTest('test_insertregioncompany'))
-    suite.addTest(InsertDataTest('test_insertcompanyhash'))
-    suite.addTest(InsertDataTest('test_inserthashcompinfo'))
+    #suite.addTest(InsertDataTest('test_insertregion'))
+    #suite.addTest(InsertDataTest('test_insertcompanies'))
+    #suite.addTest(InsertDataTest('test_insertregioncompany'))
+    #suite.addTest(InsertDataTest('test_insertcompanyhash'))
+    #suite.addTest(InsertDataTest('test_inserthashcompinfo'))
+    #suite.addTest(InsertDataTest('test_insertgethashes'))
+    
+    #suite.addTest(RedisScrapyTest('test_getsubpages'))
+    #suite.addTest(RedisScrapyTest('test_getCompanies'))
+    #suite.addTest(RedisScrapyTest('test_insertgethashes'))
+    suite.addTest(RedisScrapyTest('test_getcompanyinfo'))
     return suite
     
 if __name__ == '__main__':

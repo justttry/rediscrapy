@@ -11,6 +11,7 @@ from processPageTemplate import ProcessPageTemplate
 from time import sleep
 import unittest
 
+progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 #xpath = "//a[@class='query_name search-new-color']"
 hold_xpath = "//div[@class='ng-scope'][2]//tr[@class='ng-scope']/td[1]/a"
 invest_xpath = "//div[@class='ng-scope'][3]//tr[@class='ng-scope']/td[1]/a"
@@ -36,7 +37,6 @@ class ProcessCompanyPage(ProcessPageTemplate):
         invest_ret:投资公司信息列表
         """
         self.getUrl()
-        sleep(5)
         hold_data = self.driver.find_elements_by_xpath(hold_xpath)
         invest_data = self.driver.find_elements_by_xpath(invest_xpath)
         cominfo_data = self.driver.find_elements_by_xpath(cominfo_xpath)
@@ -58,6 +58,7 @@ class ProcessCompanyPage(ProcessPageTemplate):
         """
         if not self.comInfo:
             self.getSubPages()
+        self.closeDriver()
         self.comInfo[u'公司信息网址'] = self.url
         return self.comInfo
     

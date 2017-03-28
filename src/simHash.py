@@ -3,16 +3,16 @@
 class simhash(object):
     
     # 构造函数
-    def __init__(self, tokens='', hashbits=128):        
+    def __init__(self, tokens, hashbits=64):        
         self.hashbits = hashbits
-        self.hash = self.simhash(tokens);
+        self.hash = self.simhash_(tokens);
     
     #toString函数    
     def __str__(self):
         return str(self.hash)
     
     #生成simhash值    
-    def simhash(self, tokens):
+    def simhash_(self, tokens):
         v = [0] * self.hashbits
         for t in [self._string_hash(x) for x in tokens]: #t为token的普通hash值
             for i in range(self.hashbits):

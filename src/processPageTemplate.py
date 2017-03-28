@@ -7,6 +7,7 @@ function: 处理网页模板
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from time import sleep
 import unittest
 
 progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
@@ -22,10 +23,11 @@ class ProcessPageTemplate(object):
         self.driver = webdriver.PhantomJS(executable_path=progPath)
         
     #----------------------------------------------------------------------
-    def getUrl(self):
+    def getUrl(self, sleeptime=5):
         """"""
         try:
             self.driver.get(self.url)
+            sleep(sleeptime)
             ret = True
         except:
             ret = False
@@ -35,6 +37,12 @@ class ProcessPageTemplate(object):
     def getSubPages(self):
         """"""
         raise NotImplementedError
+    
+    #----------------------------------------------------------------------
+    def closeDriver(self):
+        """"""
+        self.driver.close()
+        self.driver.quit()
     
     
 ########################################################################
