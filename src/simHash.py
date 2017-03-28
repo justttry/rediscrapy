@@ -1,34 +1,33 @@
 	
-#!/usr/bin/python
 # coding=utf-8
-class simhash:
+class simhash(object):
     
-    #¹¹Ôìº¯Êı
-    def __init__(self, tokens='', hashbits=128):        
+    # æ„é€ å‡½æ•°
+    def __init__(self, tokens, hashbits=64):        
         self.hashbits = hashbits
-        self.hash = self.simhash(tokens);
+        self.hash = self.simhash_(tokens);
     
-    #toStringº¯Êı    
+    #toStringå‡½æ•°    
     def __str__(self):
         return str(self.hash)
     
-    #Éú³ÉsimhashÖµ    
-    def simhash(self, tokens):
+    #ç”Ÿæˆsimhashå€¼    
+    def simhash_(self, tokens):
         v = [0] * self.hashbits
-        for t in [self._string_hash(x) for x in tokens]: #tÎªtokenµÄÆÕÍ¨hashÖµ
+        for t in [self._string_hash(x) for x in tokens]: #tä¸ºtokençš„æ™®é€šhashå€¼
             for i in range(self.hashbits):
                 bitmask = 1 << i
                 if t & bitmask :
-                    v[i] += 1 #²é¿´µ±Ç°bitÎ»ÊÇ·ñÎª1,ÊÇµÄ»°½«¸ÃÎ»+1
+                    v[i] += 1 #æŸ¥çœ‹å½“å‰bitä½æ˜¯å¦ä¸º1,æ˜¯çš„è¯å°†è¯¥ä½+1
                 else:
-                    v[i] -= 1 #·ñÔòµÄ»°,¸ÃÎ»-1
+                    v[i] -= 1 #å¦åˆ™çš„è¯,è¯¥ä½-1
         fingerprint = 0
         for i in range(self.hashbits):
             if v[i] >= 0:
                 fingerprint += 1 << i
-        return fingerprint #Õû¸öÎÄµµµÄfingerprintÎª×îÖÕ¸÷¸öÎ»>=0µÄºÍ
+        return fingerprint #æ•´ä¸ªæ–‡æ¡£çš„fingerprintä¸ºæœ€ç»ˆå„ä¸ªä½>=0çš„å’Œ
     
-    #Çóº£Ã÷¾àÀë
+    #æ±‚æµ·æ˜è·ç¦»
     def hamming_distance(self, other):
         x = (self.hash ^ other) & ((1 << self.hashbits) - 1)
         tot = 0;
@@ -37,14 +36,14 @@ class simhash:
             x &= x - 1
         return tot
     
-    #ÇóÏàËÆ¶È
+    #æ±‚ç›¸ä¼¼åº¦
     def similarity (self, other):
         a = float(self.hash)
         b = float(other)
         if a > b : return b / a
         else: return a / b
     
-    #Õë¶ÔsourceÉú³ÉhashÖµ   (Ò»¸ö¿É±ä³¤¶È°æ±¾µÄPythonµÄÄÚÖÃÉ¢ÁĞ)
+    #é’ˆå¯¹sourceç”Ÿæˆhashå€¼   (ä¸€ä¸ªå¯å˜é•¿åº¦ç‰ˆæœ¬çš„Pythonçš„å†…ç½®æ•£åˆ—)
     def _string_hash(self, source):        
         if source == "":
             return 0
