@@ -23,7 +23,7 @@ class ProcessPageTemplate(object):
         self.driver = webdriver.PhantomJS(executable_path=progPath)
         
     #----------------------------------------------------------------------
-    def getUrl(self, sleeptime=5):
+    def getUrl(self, sleeptime=1):
         """"""
         try:
             self.driver.get(self.url)

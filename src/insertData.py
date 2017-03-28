@@ -81,6 +81,7 @@ class RedisScrapy(object):
                 #将公司信息入栈
                 self.insertData.insertCompanyHash(company, hash_.hash)
                 self.insertData.insertHashCompanyInfo(hash_.hash, cominfo)
+        return hold_pages, invest_pages
             
     #----------------------------------------------------------------------
     def compareHashes(self, hash_, delta=1):

@@ -45,6 +45,7 @@ class ProcessCompanyPage(ProcessPageTemplate):
         cominfo_data = [i.text.replace(u'\uff1a', ' ').split() for\
                         i in cominfo_data]
         self.comInfo = {i[0]: i[1] for i in cominfo_data}
+        self.closeDriver()
         return hold_ret, invest_ret
     
     #----------------------------------------------------------------------
@@ -56,9 +57,6 @@ class ProcessCompanyPage(ProcessPageTemplate):
         Return:
         comInfo:公司相关信息
         """
-        if not self.comInfo:
-            self.getSubPages()
-        self.closeDriver()
         self.comInfo[u'公司信息网址'] = self.url
         return self.comInfo
     
@@ -89,9 +87,10 @@ class ProcessCompanyPageTest(unittest.TestCase):
     #----------------------------------------------------------------------
     def test_getcominfo(self):
         p = ProcessCompanyPage(self.url)
+        p.getSubPages()
         cominfo = p.getComInfo()
         for i, j in cominfo.items():
-            print u'%s, %s' %(i, j)
+            print u'%s: %s' %(i, j)
             
 
 #----------------------------------------------------------------------
