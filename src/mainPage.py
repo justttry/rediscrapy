@@ -7,21 +7,20 @@ function: 处理主页www.tianyancha.com
 from bs4 import BeautifulSoup
 from urllib2 import Request
 from selenium import webdriver
+from processPageTemplate import ProcessPageTemplate
 import unittest
 
 url = 'http://www.tianyancha.com'
-progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 xpath = "//a[@class='f13 c3 block overflow-width ng-binding ng-scope']"
 
 ########################################################################
-class ProcessMainPage(object):
+class ProcessMainPage(ProcessPageTemplate):
     """"""
 
     #----------------------------------------------------------------------
     def __init__(self, url):
         """Constructor"""
-        self.driver = webdriver.PhantomJS(executable_path=progPath)
-        self.driver.get(url)
+        super(ProcessMainPage, self).__init__(url)
     
     #----------------------------------------------------------------------
     def getSubPages(self):
@@ -65,7 +64,10 @@ class ProcessMainPageTest(unittest.TestCase):
     #----------------------------------------------------------------------
     def test_getsubpages(self):
         p = ProcessMainPage(url)
-        subpages = p.getSubPages()
+        if p.getUrl():
+            subpages = p.getSubPages()
+        else:
+            subpages = {}
         for i, j in subpages.items():
             print u'城市：%s, \t网址:%s' %(i, j)
         
