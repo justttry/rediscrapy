@@ -20,12 +20,12 @@ class ProcessPageTemplate(object):
     def __init__(self, url):
         """Constructor"""
         self.url = url
-        self.driver = webdriver.PhantomJS(executable_path=progPath)
         
     #----------------------------------------------------------------------
     def getUrl(self, sleeptime=1):
         """"""
         try:
+            self.driver = webdriver.PhantomJS(executable_path=progPath)
             self.driver.get(self.url)
             sleep(sleeptime)
             ret = True

@@ -51,29 +51,30 @@ class ProcessCompanyPage(ProcessPageTemplate):
         invest_ret = {j.text: j.get_attribute('href') for j in invest_data}
         cominfo_data = [i.text.replace(u'\uff1a', ' ').split() for\
                         i in cominfo_data]
-        self.comInfo = {i[0]: i[1] for i in cominfo_data}
+        self.comInfo = {k[0]: k[1] for k in cominfo_data}
         #
         self.insertData.insertHoldCompanies(self.company, hold_ret.keys())
         self.insertData.insertInvestCompanies(self.company, invest_ret.keys())
-        for company, web in hold_ret.items():
-            if self.insertData.insertCompanies(company):
-                webnode = WebNode(company, web)
-                event = Event(EVENT_COMINFO)
-                event.dict_['data'] = webnode
-                self.eventEngine.put(event)
-            else:
-                print '\t\t%s is already insert' %company
-        for company, web in invest_ret.items():
-            if self.insertData.insertCompanies(company):
-                webnode = WebNode(company, web)
-                event = Event(EVENT_COMINFO)
-                event.dict_['data'] = webnode
-                self.eventEngine.put(event)
-            else:
-                print '\t\t%s is already insert' %company
+        #for company, web in hold_ret.items():
+            #if self.insertData.insertCompanies(company):
+                #webnode = WebNode(company, web)
+                #event = Event(EVENT_COMINFO)
+                #event.dict_['data'] = webnode
+                #self.eventEngine.put(event)
+            #else:
+                #print '\t\t%s is already insert' %company
+        #for company, web in invest_ret.items():
+            #if self.insertData.insertCompanies(company):
+                #webnode = WebNode(company, web)
+                #event = Event(EVENT_COMINFO)
+                #event.dict_['data'] = webnode
+                #self.eventEngine.put(event)
+            #else:
+                #print '\t\t%s is already insert' %company
         #self.comInfo[u'持股公司'] = hold_ret
         #self.comInfo[u'投资公司'] = invest_ret
         self.closeDriver()
+        self.comInfo[u'公司名称'] = self.company
         return hold_ret, invest_ret
     
     #----------------------------------------------------------------------

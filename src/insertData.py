@@ -100,6 +100,11 @@ class InsertData(object):
         return cnt
     
     #----------------------------------------------------------------------
+    def getHashCompanyInfo(self, key):
+        """"""
+        return self.r.hgetall('companyInfo:' + str(key))
+    
+    #----------------------------------------------------------------------
     def getHashs(self):
         """"""
         return self.r.smembers(self.hashes)

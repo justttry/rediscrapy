@@ -11,7 +11,7 @@ from mainPage import ProcessMainPage
 from subPages import ProcessSubPages
 from compPage import ProcessCompanyPage
 from insertData import InsertData
-from webNode import WebNode
+from webNode import WebNode, WebNodeFF
 from simHash import simhash
 from eventEngine import EventEngine, Event
 from eventType import *
@@ -73,6 +73,7 @@ class RedisScrapy(object):
         print u'注册子网页处理重试业务'
         self.register(EVENT_COMINFO, self.processCompInfo)
         print u'注册公司信息处理业务'
+        self.register(EVENT_COMINFO_FF, self.processCompInfoRefresh)
         #将地区信息存入redis
         self.insertData.insertRegions(subpages.keys())
         ret = {}
@@ -130,7 +131,7 @@ class RedisScrapy(object):
         #将地区-公司信息存入redis
         self.insertData.insertRegionCompanies(region, datas.keys())
         if len(datas.keys()) == 0:
-            print u'\t\t#########insertRegionCompanies retry %d failed at %s#########' \
+            print u'#########insertRegionCompanies retry %d failed at %s#########' \
                   %(cnt, url)
             #加入重试队列
             event = Event(EVENT_SUBWEB_RETRY)
@@ -170,6 +171,15 @@ class RedisScrapy(object):
         webnode = event.dict_['data']
         company, url = webnode.name, webnode.url
         self.getCompInfo(company, url)
+        
+    #----------------------------------------------------------------------
+    def processCompInfoRefresh(self, event):
+        """"""
+        webnode = event.dict_['data']
+        company, url, keys = webnode.name, webnode.url, webnode.keys
+        print u'\t\t####重新处理队列:', company
+        print u'\t\t####重新更新数据:', ' '.join(keys)
+        self.getCompInfoRefresh(company, url, keys)
     
     #----------------------------------------------------------------------
     def getCompInfo(self, company, url):
@@ -193,13 +203,53 @@ class RedisScrapy(object):
             #将公司信息入栈
             self.insertData.insertCompanyHash(company, cominfo[u'工商注册号'])
             self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], cominfo)
-        else:
+            self.refreshDump(company, url, cominfo)
+        elif cominfo.has_key(u'登记机关'):
             self.insertData.deleteCompanies(company)
             event = Event(EVENT_COMINFO)
             event.dict_['data'] = WebNode(company, url)
             self.eventEngine.put(event)
-            print u'\t没有工商注册号,重新推送--%s--%s--到处理器' %(company, url)            
+            print u'\t\t没有工商注册号,重新推送--%s--%s--到处理器' %(company, url) 
+        else:
+            print u'\t\t自然人,不推送--%s--%s--到处理器' %(company, url) 
         return hold_pages, invest_pages
+    
+    #----------------------------------------------------------------------
+    def getCompInfoRefresh(self, company, url, keys):
+        """
+        获取公司信息
+        """
+        print u'\t\t####处理更新--%s--' %company
+        #计算hash值
+        p = ProcessCompanyPage(self.eventEngine, 
+                               self.insertData, 
+                               company, 
+                               url)
+        hold_pages, invest_pages = p.getSubPages()
+        cominfo = p.getComInfo()
+        if cominfo.has_key(u'工商注册号') and cominfo[u'工商注册号'] != u'未公开':
+            #将公司信息入栈
+            print u'\t\t####更新键值:', ' '.join(keys)
+            newcominfo = self.insertData.getHashCompanyInfo(cominfo[u'工商注册号'])
+            for key in keys:
+                newcominfo[key] = cominfo[key]
+            self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], newcominfo)
+            self.refreshDump(company, url, newcominfo)
+    
+    #----------------------------------------------------------------------
+    def refreshDump(self, company, url, cominfo):
+        """"""
+        keys = []
+        for key, value in cominfo.items():
+            if value == u'未公开':
+                keys.append(key)
+        if keys:
+            print u'\t\t!!出现未公开数据:', company, u'重新导入队列'
+            print u'\t\t!!未公开数据:', ' '.join(keys)
+            webnode = WebNodeFF(company, url, keys)
+            event = Event(EVENT_COMINFO_FF)
+            event.dict_['data'] = webnode
+            self.eventEngine.put(event)
             
     #----------------------------------------------------------------------
     def compareHashes(self, hash_, delta=1):
@@ -295,7 +345,7 @@ class RedisScrapyTest(unittest.TestCase):
 def main():
     """"""
     r = RedisScrapy(1)
-    r.start(cond=u'北京')
+    r.start(cond=u'玉树藏族自治州')
     
 
 #----------------------------------------------------------------------
