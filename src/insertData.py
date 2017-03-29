@@ -19,6 +19,17 @@ import unittest
 progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 
 ########################################################################
+class WebNode(object):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, name, url):
+        """Constructor"""
+        self.name = name
+        self.url = url
+        
+
+########################################################################
 class RedisScrapy(object):
     """"""
 
@@ -31,18 +42,24 @@ class RedisScrapy(object):
         self.hashs = [long(i) for i in self.getHashs()]
         
     #----------------------------------------------------------------------
-    def start(self):
+    def start(self, cond=None):
         """
         开启抓取任务
         """
         ret = self.getSubpages()
         self.eventEngine.start()
         for web, region in ret.items():
-            event = Event(EVENT_SUBWEB)
-            event.dict_['data'] = (region, web)
-            self.eventEngine.put(event)
-            print u'推送--%s--%s--到处理器' %(region, web)
-        
+            if cond is None:
+                event = Event(EVENT_SUBWEB)
+                event.dict_['data'] = WebNode(region, web)
+                self.eventEngine.put(event)
+                print u'推送--%s--%s--到处理器' %(region, web)
+            elif region == cond:
+                event = Event(EVENT_SUBWEB)
+                event.dict_['data'] = WebNode(region, web)
+                self.eventEngine.put(event)
+                print u'推送--%s--%s--到处理器' %(region, web)
+            
         
     #----------------------------------------------------------------------
     def getSubpages(self):
@@ -64,25 +81,25 @@ class RedisScrapy(object):
         #将地区信息存入redis
         self.insertData.insertRegions(subpages.keys())
         ret = {}
-        for i, j in subpages.items():
-            for k in range(50):
-                if k:
-                    ret[j + '/p%d'%k] = i
-                else:
-                    ret[j] = i
+        #for i, j in subpages.items():
+            #for k in range(1, 51):
+                #ret[j + '/p%d'%k] = i
+        ret = {j+'/p%d'%k:i for k in range(1, 51) for i, j in subpages.items()}
         return ret
     
     #----------------------------------------------------------------------
     def processSubwebs(self, event):
         """子网页处理任务"""
-        region, web = event.dict_['data']
+        webnode = event.dict_['data']
+        region, web = webnode.name, webnode.url
         #获取子网页中的公司-网址信息
         datas = self.getCompanies(region, web)
         for company, url in datas.items():
-            event = Event(EVENT_COMINFO)
-            event.dict_['data'] = (company, url)
-            self.eventEngine.put(event)
-            print u'\t推送--%s--%s--到处理器' %(company, url)
+            if self.insertData.insertCompanies(company):
+                event = Event(EVENT_COMINFO)
+                event.dict_['data'] = WebNode(company, url)
+                self.eventEngine.put(event)
+                print u'\t推送--%s--%s--到处理器' %(company, url)
     
     #----------------------------------------------------------------------
     def getCompanies(self, region, url):
@@ -98,12 +115,15 @@ class RedisScrapy(object):
             datas = {}
         #将地区-公司信息存入redis
         self.insertData.insertRegionCompanies(region, datas.keys())
+        if len(datas.keys()) == 0:
+            print u'\t\t#########insertRegionCompanies failed at %s#########' %url
         return datas
     
     #----------------------------------------------------------------------
     def processCompInfo(self, event):
         """"""
-        company, url = event.dict_['data']
+        webnode = event.dict_['data']
+        company, url = webnode.name, webnode.url
         self.getCompInfo(company, url)
     
     #----------------------------------------------------------------------
@@ -113,19 +133,18 @@ class RedisScrapy(object):
         """
         print u'\t\t处理--%s--' %company
         #计算hash值
-        if self.insertData.insertCompanies(company):
-            p = ProcessCompanyPage(url)
-            hold_pages, invest_pages = p.getSubPages()
-            cominfo = p.getComInfo()
-            hash_ = simhash(cominfo.values())
-            if self.compareHashes(hash_):
-                #将新的哈希值存入列表
-                self.hashs.append(hash_.hash)
-                #将新的哈希值入栈
-                self.insertData.insertHashs(hash_.hash)
-                #将公司信息入栈
-                self.insertData.insertCompanyHash(company, hash_.hash)
-                self.insertData.insertHashCompanyInfo(hash_.hash, cominfo)
+        p = ProcessCompanyPage(url)
+        hold_pages, invest_pages = p.getSubPages()
+        cominfo = p.getComInfo()
+        hash_ = simhash(cominfo.values())
+        if self.compareHashes(hash_):
+            #将新的哈希值存入列表
+            self.hashs.append(hash_.hash)
+            #将新的哈希值入栈
+            self.insertData.insertHashs(hash_.hash)
+            #将公司信息入栈
+            self.insertData.insertCompanyHash(company, hash_.hash)
+            self.insertData.insertHashCompanyInfo(hash_.hash, cominfo)
         return hold_pages, invest_pages
             
     #----------------------------------------------------------------------
@@ -382,7 +401,7 @@ class RedisScrapyTest(unittest.TestCase):
 def main():
     """"""
     r = RedisScrapy()
-    r.start()
+    r.start(cond=u'北京')
     
 
 #----------------------------------------------------------------------
