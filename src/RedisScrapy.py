@@ -203,7 +203,7 @@ class RedisScrapy(object):
             #将公司信息入栈
             self.insertData.insertCompanyHash(company, cominfo[u'工商注册号'])
             self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], cominfo)
-            self.refreshDump(company, url, cominfo)
+            #self.refreshDump(company, url, cominfo)
         elif cominfo.has_key(u'登记机关'):
             self.insertData.deleteCompanies(company)
             event = Event(EVENT_COMINFO)
@@ -234,22 +234,22 @@ class RedisScrapy(object):
             for key in keys:
                 newcominfo[key] = cominfo[key]
             self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], newcominfo)
-            self.refreshDump(company, url, newcominfo)
+            #self.refreshDump(company, url, newcominfo)
     
-    #----------------------------------------------------------------------
-    def refreshDump(self, company, url, cominfo):
-        """"""
-        keys = []
-        for key, value in cominfo.items():
-            if value == u'未公开':
-                keys.append(key)
-        if keys:
-            print u'\t\t!!出现未公开数据:', company, u'重新导入队列'
-            print u'\t\t!!未公开数据:', ' '.join(keys)
-            webnode = WebNodeFF(company, url, keys)
-            event = Event(EVENT_COMINFO_FF)
-            event.dict_['data'] = webnode
-            self.eventEngine.put(event)
+    ##----------------------------------------------------------------------
+    #def refreshDump(self, company, url, cominfo):
+        #""""""
+        #keys = []
+        #for key, value in cominfo.items():
+            #if value == u'未公开':
+                #keys.append(key)
+        #if keys:
+            #print u'\t\t!!出现未公开数据:', company, u'重新导入队列'
+            #print u'\t\t!!未公开数据:', ' '.join(keys)
+            #webnode = WebNodeFF(company, url, keys)
+            #event = Event(EVENT_COMINFO_FF)
+            #event.dict_['data'] = webnode
+            #self.eventEngine.put(event)
             
     #----------------------------------------------------------------------
     def compareHashes(self, hash_, delta=1):
