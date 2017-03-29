@@ -10,6 +10,7 @@ from selenium import webdriver
 from mainPage import ProcessMainPage
 from subPages import ProcessSubPages
 from compPage import ProcessCompanyPage
+from webNode import WebNode
 from simHash import simhash
 from eventEngine import EventEngine, Event
 from eventType import *
@@ -17,16 +18,6 @@ import jieba
 import unittest
 
 progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
-
-########################################################################
-class WebNode(object):
-    """"""
-
-    #----------------------------------------------------------------------
-    def __init__(self, name, url):
-        """Constructor"""
-        self.name = name
-        self.url = url
         
 
 ########################################################################
@@ -34,12 +25,13 @@ class RedisScrapy(object):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, k=50):
         """Constructor"""
         self.url = 'http://www.tianyancha.com'
         self.eventEngine = EventEngine()
         self.insertData = InsertData()
         self.hashs = [long(i) for i in self.getHashs()]
+        self.k = k
         
     #----------------------------------------------------------------------
     def start(self, cond=None):
@@ -76,6 +68,8 @@ class RedisScrapy(object):
         #注册任务
         self.register(EVENT_SUBWEB, self.processSubwebs)
         print u'注册子网页处理业务'
+        self.register(EVENT_SUBWEB_RETRY, self.processSubwebs_retry)
+        print u'注册子网页处理重试业务'
         self.register(EVENT_COMINFO, self.processCompInfo)
         print u'注册公司信息处理业务'
         #将地区信息存入redis
@@ -84,7 +78,7 @@ class RedisScrapy(object):
         #for i, j in subpages.items():
             #for k in range(1, 51):
                 #ret[j + '/p%d'%k] = i
-        ret = {j+'/p%d'%k:i for k in range(1, 51) for i, j in subpages.items()}
+        ret = {j+'/p%d'%k:i for k in range(1, self.k+1) for i, j in subpages.items()}
         return ret
     
     #----------------------------------------------------------------------
@@ -102,6 +96,51 @@ class RedisScrapy(object):
                 print u'\t推送--%s--%s--到处理器' %(company, url)
     
     #----------------------------------------------------------------------
+    def processSubwebs_retry(self, event):
+        """子网页处理任务"""
+        webnode = event.dict_['data']
+        region, web = webnode.name, webnode.url
+        cnt = webnode.retry
+        #大于三次取消重试
+        if cnt >= 3:
+            print '!!!!web---retry cnt greater than 3'
+            return
+        #获取子网页中的公司-网址信息
+        datas = self.getCompanies_retry(region, web, cnt)
+        for company, url in datas.items():
+            if self.insertData.insertCompanies(company):
+                event = Event(EVENT_COMINFO)
+                event.dict_['data'] = WebNode(company, url)
+                self.eventEngine.put(event)
+                print u'\t推送--%s--%s--到处理器' %(company, url)
+    
+    #----------------------------------------------------------------------
+    def getCompanies_retry(self, region, url, cnt):
+        """
+        从子网页上获取公司列表
+        Return:
+        datas:{公司：网址}
+        """
+        p = ProcessSubPages(url)
+        if p.getUrl():
+            datas = p.getSubPages()
+        else:
+            datas = {}
+        #将地区-公司信息存入redis
+        self.insertData.insertRegionCompanies(region, datas.keys())
+        if len(datas.keys()) == 0:
+            print u'\t\t#########insertRegionCompanies retry %d failed at %s#########' \
+                  %(cnt, url)
+            #加入重试队列
+            event = Event(EVENT_SUBWEB_RETRY)
+            webnode = WebNode(region, web)
+            webnode.retry = cnt + 1
+            event.dict_['data'] = webnode
+            self.eventEngine.put(event)
+            print u'!!!推送--%s--%s--到重试队列' %(region, web)
+        return datas
+    
+    #----------------------------------------------------------------------
     def getCompanies(self, region, url):
         """
         从子网页上获取公司列表
@@ -117,6 +156,11 @@ class RedisScrapy(object):
         self.insertData.insertRegionCompanies(region, datas.keys())
         if len(datas.keys()) == 0:
             print u'\t\t#########insertRegionCompanies failed at %s#########' %url
+            #加入重试队列
+            event = Event(EVENT_SUBWEB_RETRY)
+            event.dict_['data'] = WebNode(region, url)
+            self.eventEngine.put(event)
+            print u'!!!推送--%s--%s--到重试队列' %(region, url)
         return datas
     
     #----------------------------------------------------------------------
@@ -133,18 +177,23 @@ class RedisScrapy(object):
         """
         print u'\t\t处理--%s--' %company
         #计算hash值
-        p = ProcessCompanyPage(url)
+        p = ProcessCompanyPage(self.eventEngine, url)
         hold_pages, invest_pages = p.getSubPages()
         cominfo = p.getComInfo()
         hash_ = simhash(cominfo.values())
-        if self.compareHashes(hash_):
+        if cominfo.has_key(u'工商注册号') and cominfo[u'工商注册号'] != u'未公开':
             #将新的哈希值存入列表
             self.hashs.append(hash_.hash)
             #将新的哈希值入栈
             self.insertData.insertHashs(hash_.hash)
             #将公司信息入栈
-            self.insertData.insertCompanyHash(company, hash_.hash)
-            self.insertData.insertHashCompanyInfo(hash_.hash, cominfo)
+            self.insertData.insertCompanyHash(company, cominfo[u'工商注册号'])
+            self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], cominfo)
+        else:
+            event = Event(EVENT_COMINFO)
+            event.dict_['data'] = WebNode(company, url)
+            self.eventEngine.put(event)
+            print u'\t没有工商注册号,重新推送--%s--%s--到处理器' %(company, url)            
         return hold_pages, invest_pages
             
     #----------------------------------------------------------------------
@@ -400,7 +449,7 @@ class RedisScrapyTest(unittest.TestCase):
 #----------------------------------------------------------------------
 def main():
     """"""
-    r = RedisScrapy()
+    r = RedisScrapy(1)
     r.start(cond=u'北京')
     
 

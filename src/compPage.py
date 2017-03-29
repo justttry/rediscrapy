@@ -8,6 +8,9 @@ function: 处理公司页面, 例如 http://www.tianyancha.com/company/5309154
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from processPageTemplate import ProcessPageTemplate
+from webNode import WebNode
+from eventEngine import Event
+from eventType import *
 from time import sleep
 import unittest
 
@@ -22,7 +25,8 @@ class ProcessCompanyPage(ProcessPageTemplate):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self, url):
+    def __init__(self, eventEngine, url):
+        self.eventEngine = eventEngine
         super(ProcessCompanyPage, self).__init__(url)
         self.comInfo = {}
         
@@ -45,6 +49,19 @@ class ProcessCompanyPage(ProcessPageTemplate):
         cominfo_data = [i.text.replace(u'\uff1a', ' ').split() for\
                         i in cominfo_data]
         self.comInfo = {i[0]: i[1] for i in cominfo_data}
+        #
+        for company, web in hold_ret.items():
+            webnode = WebNode(company, web)
+            event = Event(EVENT_COMINFO)
+            event.dict_['data'] = webnode
+            self.eventEngine.put(event)
+        for company, web in invest_ret.items():
+            webnode = WebNode(company, web)
+            event = Event(EVENT_COMINFO)
+            event.dict_['data'] = webnode
+            self.eventEngine.put(event)
+        #self.comInfo[u'持股公司'] = hold_ret
+        #self.comInfo[u'投资公司'] = invest_ret
         self.closeDriver()
         return hold_ret, invest_ret
     
