@@ -25,8 +25,11 @@ class ProcessCompanyPage(ProcessPageTemplate):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine, url):
+    def __init__(self, eventEngine, insertData, company, url):
         self.eventEngine = eventEngine
+        self.insertData = insertData
+        self.company = company
+        self.url = url
         super(ProcessCompanyPage, self).__init__(url)
         self.comInfo = {}
         
@@ -50,16 +53,24 @@ class ProcessCompanyPage(ProcessPageTemplate):
                         i in cominfo_data]
         self.comInfo = {i[0]: i[1] for i in cominfo_data}
         #
+        self.insertData.insertHoldCompanies(self.company, hold_ret.keys())
+        self.insertData.insertInvestCompanies(self.company, invest_ret.keys())
         for company, web in hold_ret.items():
-            webnode = WebNode(company, web)
-            event = Event(EVENT_COMINFO)
-            event.dict_['data'] = webnode
-            self.eventEngine.put(event)
+            if self.insertData.insertCompanies(company):
+                webnode = WebNode(company, web)
+                event = Event(EVENT_COMINFO)
+                event.dict_['data'] = webnode
+                self.eventEngine.put(event)
+            else:
+                print '\t\t%s is already insert' %company
         for company, web in invest_ret.items():
-            webnode = WebNode(company, web)
-            event = Event(EVENT_COMINFO)
-            event.dict_['data'] = webnode
-            self.eventEngine.put(event)
+            if self.insertData.insertCompanies(company):
+                webnode = WebNode(company, web)
+                event = Event(EVENT_COMINFO)
+                event.dict_['data'] = webnode
+                self.eventEngine.put(event)
+            else:
+                print '\t\t%s is already insert' %company
         #self.comInfo[u'持股公司'] = hold_ret
         #self.comInfo[u'投资公司'] = invest_ret
         self.closeDriver()
