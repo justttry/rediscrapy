@@ -1,6 +1,8 @@
 # encoding:UTF-8
 
 EVENT_TIMER = 'eTimer'
-EVENT_PROCESSHOME = 'eHome'
-EVENT_PROCESSSUBS = 'eSubs'
-EVENT_PROCESSCMPN = 'eCmpn'
+EVENT_SUBWEB = 'eSubweb'
+EVENT_SUBWEB_RETRY = 'eSubweb_retry'
+EVENT_COMINFO = 'eCominfo'
+EVENT_COMINFO_FF = 'eCominfo_ff'
+EVENT_REFRESH = 'eRefresh'
