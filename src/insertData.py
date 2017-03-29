@@ -12,10 +12,9 @@ from subPages import ProcessSubPages
 from compPage import ProcessCompanyPage
 from simHash import simhash
 from eventEngine import EventEngine, Event
+from eventType import *
 import jieba
 import unittest
-
-progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 
 ########################################################################
 class RedisScrapy(object):

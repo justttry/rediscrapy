@@ -1,3 +1,6 @@
 # encoding:UTF-8
 
 EVENT_TIMER = 'eTimer'
+EVENT_PROCESSHOME = 'eHome'
+EVENT_PROCESSSUBS = 'eSubs'
+EVENT_PROCESSCMPN = 'eCmpn'
