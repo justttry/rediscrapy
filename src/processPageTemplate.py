@@ -10,7 +10,8 @@ from selenium import webdriver
 from time import sleep
 import unittest
 
-progPath = r"D:\Anaconda2\Tools\phantomjs-2.1.1-windows\bin\phantomjs.exe"
+#progPath = r"D:\Anaconda2\Tools\phantomjs-2.1.1-windows\bin\phantomjs.exe"
+progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 
 ########################################################################
 class ProcessPageTemplate(object):
@@ -20,15 +21,18 @@ class ProcessPageTemplate(object):
     def __init__(self, url):
         """Constructor"""
         self.url = url
+        self.dcap = dict(webdriver.DesiredCapabilities.PHANTOMJS)
+        self.dcap["phantomjs.page.settings.userAgent"] = ("Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36")
+        self.service_args = ['--load-images=false', '--proxy-type=None']
+        
         
     #----------------------------------------------------------------------
     def getUrl(self, sleeptime=1):
         """"""
         try:
-            dcap = dict(webdriver.DesiredCapabilities.PHANTOMJS)
-            dcap["phantomjs.page.settings.userAgent"] = ("Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36")
-            service_args = ['--load-images=false', '--proxy-type=None']
-            self.driver = webdriver.PhantomJS(executable_path=progPath, service_args=service_args, desired_capabilities=dcap)            
+            self.driver = webdriver.PhantomJS(executable_path=progPath, 
+                                              service_args=self.service_args, 
+                                              desired_capabilities=self.dcap)            
             #self.driver = webdriver.PhantomJS(executable_path=progPath)
             self.driver.get(self.url)
             sleep(sleeptime)

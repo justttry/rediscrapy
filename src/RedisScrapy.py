@@ -345,7 +345,7 @@ class RedisScrapyTest(unittest.TestCase):
 def main():
     """"""
     r = RedisScrapy(1)
-    r.start(cond=u'玉树藏族自治州')
+    r.start()
     
 
 #----------------------------------------------------------------------
