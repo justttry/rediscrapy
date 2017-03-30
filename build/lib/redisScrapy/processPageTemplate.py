@@ -10,8 +10,8 @@ from selenium import webdriver
 from time import sleep
 import unittest
 
-#progPath = r"D:\Anaconda2\Tools\phantomjs-2.1.1-windows\bin\phantomjs.exe"
-progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
+progPath = r"D:\Anaconda2\Tools\phantomjs-2.1.1-windows\bin\phantomjs.exe"
+#progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 
 ########################################################################
 class ProcessPageTemplate(object):

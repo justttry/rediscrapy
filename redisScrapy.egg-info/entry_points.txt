@@ -1,7 +1,4 @@
 [console_scripts]
-redisScrapy = src.RedisScrapy.RedisScrapy
-redisScrapy_main = src.RedisScrapy.main
-
-[setuptools.installation]
-eggsecutable = src.RedisScrapy.main
+redisScrapy = redisScrapy.main
+redisScrapy_main = redisScrapy.main
 

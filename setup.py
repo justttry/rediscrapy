@@ -8,11 +8,11 @@ setup(
     packages = find_packages(),
     entry_points = {
         'console_scripts': [
-            'redisScrapy = src.RedisScrapy.RedisScrapy',
-            'redisScrapy_main = src.RedisScrapy.main',
+            'redisScrapy = redisScrapy.main',
+            'redisScrapy_main = redisScrapy.main',
         ],
-        'setuptools.installation': [
-            'eggsecutable = src.RedisScrapy.main',
-        ]
+        #'setuptools.installation': [
+            #'eggsecutable = src.RedisScrapy.main',
+        #]
     }
 )
