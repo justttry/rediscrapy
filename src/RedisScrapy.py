@@ -135,11 +135,11 @@ class RedisScrapy(object):
                   %(cnt, url)
             #加入重试队列
             event = Event(EVENT_SUBWEB_RETRY)
-            webnode = WebNode(region, web)
+            webnode = WebNode(region, url)
             webnode.retry = cnt + 1
             event.dict_['data'] = webnode
             self.eventEngine.put(event)
-            print u'!!!推送--%s--%s--到重试队列' %(region, web)
+            print u'!!!推送--%s--%s--到重试队列' %(region, url)
         return datas
     
     #----------------------------------------------------------------------
