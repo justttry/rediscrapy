@@ -63,26 +63,3 @@ class ProcessSubPages(ProcessPageTemplate):
             ret[i.text] = i.get_attribute('href')
         self.closeDriver()
         return ret
-    
-    
-########################################################################
-class ProcessSubPagesTest(unittest.TestCase):
-    """"""
-
-    #----------------------------------------------------------------------
-    def test_getsubpages(self):
-        p = ProcessSubPages(url)
-        if p.getUrl():
-            datas = p.getSubPages()
-        for i, j in datas.items():
-            print u'公司：%s, \t网址:%s' %(i, j)
-            
-#----------------------------------------------------------------------
-def suite():
-    """"""
-    suite = unittest.TestSuite()
-    suite.addTest(ProcessSubPagesTest('test_getsubpages'))
-    return suite
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='suite')

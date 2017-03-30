@@ -116,35 +116,3 @@ class Event(object):
         """Constructor"""
         self.type_ = type_
         self.dict_ = {}
-    
-
-########################################################################
-class EventEngineTest(unittest.TestCase):
-    """"""
-
-    #----------------------------------------------------------------------
-    def test_0(self):
-        import sys
-        from datetime import datetime
-        from PyQt4.QtCore import QCoreApplication
-        
-        def simpletest(event):
-            print u'处理每秒触发的计时器事件:%s' % str(datetime.now())
-            
-        app = QCoreApplication(sys.argv)
-        
-        ee = EventEngine()
-        ee.register(EVENT_TIMER, simpletest)
-        ee.start()
-        
-        app.exec_()
-        
-#----------------------------------------------------------------------
-def suite():
-    """"""
-    suite = unittest.TestSuite()
-    suite.addTest(EventEngineTest('test_0'))
-    return suite
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='suite')

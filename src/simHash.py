@@ -57,17 +57,3 @@ class simhash(object):
             if x == -1:
                 x = -2
             return x
-             
-
-if __name__ == '__main__':
-    s = 'This is a test string for testing'
-    hash1 = simhash(s.split())
-    
-    s = 'This is a test string for testing also'
-    hash2 = simhash(s.split())
-    
-    s = 'nai nai ge xiong cao'
-    hash3 = simhash(s.split())
-    
-    print(hash1.hamming_distance(hash2.hash) , "   " , hash1.similarity(hash2.hash))
-    print(hash1.hamming_distance(hash3.hash) , "   " , hash1.similarity(hash3.hash))

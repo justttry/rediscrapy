@@ -196,14 +196,10 @@ class RedisScrapy(object):
         cominfo = p.getComInfo()
         hash_ = simhash(cominfo.values())
         if cominfo.has_key(u'工商注册号') and cominfo[u'工商注册号'] != u'未公开':
-            #将新的哈希值存入列表
             self.hashs.append(hash_.hash)
-            #将新的哈希值入栈
             self.insertData.insertHashs(hash_.hash)
-            #将公司信息入栈
             self.insertData.insertCompanyHash(company, cominfo[u'工商注册号'])
             self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], cominfo)
-            #self.refreshDump(company, url, cominfo)
         elif cominfo.has_key(u'登记机关'):
             self.insertData.deleteCompanies(company)
             event = Event(EVENT_COMINFO)
@@ -234,22 +230,6 @@ class RedisScrapy(object):
             for key in keys:
                 newcominfo[key] = cominfo[key]
             self.insertData.insertHashCompanyInfo(cominfo[u'工商注册号'], newcominfo)
-            #self.refreshDump(company, url, newcominfo)
-    
-    ##----------------------------------------------------------------------
-    #def refreshDump(self, company, url, cominfo):
-        #""""""
-        #keys = []
-        #for key, value in cominfo.items():
-            #if value == u'未公开':
-                #keys.append(key)
-        #if keys:
-            #print u'\t\t!!出现未公开数据:', company, u'重新导入队列'
-            #print u'\t\t!!未公开数据:', ' '.join(keys)
-            #webnode = WebNodeFF(company, url, keys)
-            #event = Event(EVENT_COMINFO_FF)
-            #event.dict_['data'] = webnode
-            #self.eventEngine.put(event)
             
     #----------------------------------------------------------------------
     def compareHashes(self, hash_, delta=1):
@@ -275,89 +255,12 @@ class RedisScrapy(object):
     def register(self, type_, handler):
         """"""
         self.eventEngine.register(type_, handler)
-        
-        
-########################################################################
-class RedisScrapyTest(unittest.TestCase):
-    """"""
-    
-    #----------------------------------------------------------------------
-    def setUp(self):
-        """"""
-        self.r = RedisScrapy()
-        self.r.clearDb()
-
-    #----------------------------------------------------------------------
-    def test_getsubpages(self):
-        subpages = self.r.getSubpages()
-        for i, j in subpages.items():
-            print i, j
-        print len(subpages)
-        print 'test_getsubpages done'
-        print '-' * 70
-        
-    #----------------------------------------------------------------------
-    def test_getCompanies(self):
-        """"""
-        url = 'http://guyuan.tianyancha.com/search/p8'
-        region = u'北京'
-        datas = self.r.getCompanies(region, url)
-        for i, j in datas.items():
-            print u'公司：%s, \t网址:%s' %(i, j)
-        print 'test_getCompanies done'
-        print '-' * 70
-    
-    #----------------------------------------------------------------------
-    def test_insertgethashes(self):
-        """"""
-        self.r.insertData.insertHashs(0)
-        self.r.insertData.insertHashs(3)
-        self.r.insertData.insertHashs(5)
-        self.r.insertData.insertHashs(7)
-        self.r.insertData.insertHashs(9)
-        ret = self.r.getHashs()
-        self.assertListEqual(sorted(list(ret)), 
-                             sorted(map(str, [0, 3, 5, 7, 9])))
-        print 'test_insertgethashes done'
-        print '-' * 70
-        
-    #----------------------------------------------------------------------
-    def test_getcompanyinfo(self):
-        """"""
-        url = 'http://guyuan.tianyancha.com/search/p8'
-        region = u'北京'
-        com_webs = self.r.getCompanies(region, url)
-        for i, j in com_webs.items():
-            self.r.getCompInfo(i, j)
-        print 'test_getcompanyinfo done'
-        print '-' * 70
-        
-    #----------------------------------------------------------------------
-    def test_all(self):
-        """"""
-        r = RedisScrapy()
-        r.start()
-        print 'test_all done'
-        print '-' * 70
-        
 
 #----------------------------------------------------------------------
 def main():
     """"""
     r = RedisScrapy(1)
     r.start()
-    
-
-#----------------------------------------------------------------------
-def suite():
-    """"""
-    suite = unittest.TestSuite()
-    #suite.addTest(RedisScrapyTest('test_getsubpages'))
-    #suite.addTest(RedisScrapyTest('test_getCompanies'))
-    #suite.addTest(RedisScrapyTest('test_insertgethashes'))
-    #suite.addTest(RedisScrapyTest('test_getcompanyinfo'))
-    suite.addTest(RedisScrapyTest('test_all'))
-    return suite
     
 if __name__ == '__main__':
     #unittest.main(defaultTest='suite')
