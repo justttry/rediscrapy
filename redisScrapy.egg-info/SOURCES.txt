@@ -1,0 +1,17 @@
+setup.py
+redisScrapy.egg-info/PKG-INFO
+redisScrapy.egg-info/SOURCES.txt
+redisScrapy.egg-info/dependency_links.txt
+redisScrapy.egg-info/entry_points.txt
+redisScrapy.egg-info/top_level.txt
+src/RedisScrapy.py
+src/__init__.py
+src/compPage.py
+src/eventEngine.py
+src/eventType.py
+src/insertData.py
+src/mainPage.py
+src/processPageTemplate.py
+src/simHash.py
+src/subPages.py
+src/webNode.py
