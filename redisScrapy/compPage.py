@@ -14,7 +14,7 @@ from eventType import *
 from time import sleep
 import unittest
 
-progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
+#progPath = r"C:\Program Files\phantomjs-2.1.1-windows\bin\phantomjs.exe"
 #xpath = "//a[@class='query_name search-new-color']"
 hold_xpath = "//div[@class='ng-scope'][2]//tr[@class='ng-scope']/td[1]/a"
 invest_xpath = "//div[@class='ng-scope'][3]//tr[@class='ng-scope']/td[1]/a"

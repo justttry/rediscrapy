@@ -1,4 +1,0 @@
-[console_scripts]
-redisScrapy = redisScrapy.main
-redisScrapy_main = redisScrapy.main
-
